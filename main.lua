@@ -6,11 +6,20 @@ local lastModtime
 
 local drawFunction
 
+local lastError
+
 local reloadTimer = 0
 local reloadInterval = 0.25
 
 local function reloadFile()
-  drawFunction = love.filesystem.load(filePath)()
+  local success, result = pcall(love.filesystem.load(filePath))
+  if success then
+    drawFunction = result
+    lastError = nil
+  else
+    drawFunction = nil
+    lastError = result
+  end
 end
 
 function love.load(arg)
@@ -46,6 +55,14 @@ function love.draw()
       lg.getWidth(), "center")
     return
   end
+  if lastError then
+    lg.printf(lastError, 0, lg.getHeight() / 2 - lg.getFont():getHeight(),
+      lg.getWidth(), "center")
+    return
+  end
 
-  drawFunction(love.timer.getTime())
+  local success, message = pcall(drawFunction, love.timer.getTime())
+  if not success then
+    lastError = message
+  end
 end

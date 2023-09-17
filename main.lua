@@ -12,7 +12,13 @@ local reloadTimer = 0
 local reloadInterval = 0.25
 
 local function reloadFile()
-  local success, result = pcall(love.filesystem.load(filePath))
+  local success, result = pcall(love.filesystem.load, filePath)
+  if not success then
+    drawFunction = nil
+    lastError = result
+    return
+  end
+  local success, result = pcall(result)
   if success then
     drawFunction = result
     lastError = nil
